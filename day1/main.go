@@ -3,46 +3,67 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
-// read the input file line by line and compare count the number of times a depth
-// measurement increases from the previous measurement.
 func main() {
-	var inc int
-	var depth int
-
-	// read the input file line by line
-	file, err := os.Open("input")
+	depths, err := readDepths(os.Stdin)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 
-	defer file.Close()
+	fmt.Println("The number of times the depth measurement increases is: ", measureSingleDepth(depths)) // task 1
 
-	scanner := bufio.NewScanner(file)
+	fmt.Println("Considering the sums of a three-measurement sliding window, the number of times the depth measurement increases is: ", measureMultipleDepths(depths)) // task 2
+}
+
+func measureSingleDepth(depths []int) int {
+	var count int
+	for i := 1; i < len(depths); i++ {
+
+		if depths[i] > depths[i-1] {
+			count++
+		}
+	}
+
+	return count
+}
+
+func measureMultipleDepths(depths []int) int {
+	var count int
+
+	for i := 0; i+3 < len(depths); i++ {
+		a := depths[i] + depths[i+1] + depths[i+2]
+		b := depths[i+1] + depths[i+2] + depths[i+3]
+		if b > a {
+			count++
+		}
+	}
+	return count
+}
+
+func readDepths(r io.Reader) ([]int, error) {
+	var depths []int
+	scanner := bufio.NewScanner(r)
 
 	for scanner.Scan() {
-		// convert the string to an integer
-		i, err := strconv.Atoi(scanner.Text())
+		fmt.Println(scanner.Text())
+		dep := strings.TrimSpace(scanner.Text())
+		if dep == "" {
+			continue
+		}
+
+		n, err := strconv.Atoi(dep)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		// if the depth is greater than the previous depth, increment the count
-		if depth == 0 {
-			depth = i
-		}
-
-		if i > depth {
-			inc++
-			depth = i
-		} else {
-			depth = i
-		}
+		depths = append(depths, n)
 	}
 
-	fmt.Println(inc)
+	return depths, scanner.Err()
 }
