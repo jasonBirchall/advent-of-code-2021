@@ -92,7 +92,7 @@ func leastCommon(input []string, position int) byte {
 	}
 
 	// if there's more 'one's
-	if c['1'] > c['0'] {
+	if c['1'] >= c['0'] {
 		return '0'
 	}
 
