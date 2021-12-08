@@ -7,30 +7,27 @@ import (
 	"strings"
 )
 
-//go:embed input.txt
-var inputSmall string
-
-//go:embed input2.txt
+//go:embed day7.txt
 var input string
 
 func main() {
-	log.Println("Part 1:", partA(input))
-	log.Println("Part 2:", partB(input))
+	crabs := stringsToInts(strings.Split(input, ","))
+	log.Println("Part 1:", part1(input, crabs))
+	log.Println("Part 2:", partB(input, crabs))
 }
 
-func partA(input string) int {
-	craps := stringsToInts(strings.Split(input, ","))
+func part1(input string, crabs []int) int {
 	min := 9999999999
 
-	ch := make(chan int, len(craps)-2)
+	ch := make(chan int, len(crabs))
 
-	for i := 2; i <= len(craps); i++ {
+	for i := 2; i <= len(crabs); i++ {
 		go func(i int) {
-			ch <- alignTo(craps, i)
+			ch <- align(crabs, i)
 		}(i)
 	}
 
-	for i := 2; i <= len(craps); i++ {
+	for i := 2; i <= len(crabs); i++ {
 		c := <-ch
 
 		if c < min {
@@ -43,14 +40,11 @@ func partA(input string) int {
 	return min
 }
 
-var results []int
+func partB(input string, crabs []int) int {
+	min := 99999999999
 
-func partB(input string) int {
-	craps := stringsToInts(strings.Split(input, ","))
-	min := 9999999999
-
-	for i := 2; i <= len(craps); i++ {
-		c := alignToB(craps, i)
+	for i := 2; i <= len(crabs); i++ {
+		c := alignTo(crabs, i)
 		if c < min {
 			min = c
 		}
@@ -59,21 +53,21 @@ func partB(input string) int {
 	return min
 }
 
-func alignTo(craps []int, position int) int {
+func align(crabs []int, position int) int {
 	c := 0
 
-	for _, crap := range craps {
-		c += abs(position - crap)
+	for _, crab := range crabs {
+		c += abs(position - crab)
 	}
 
 	return c
 }
 
-func alignToB(craps []int, position int) int {
+func alignTo(crabs []int, position int) int {
 	c := 0
 
-	for _, crap := range craps {
-		moves := abs(position - crap)
+	for _, crab := range crabs {
+		moves := abs(position - crab)
 		c += int(float64(1+moves) / 2.0 * float64(moves))
 	}
 
@@ -90,8 +84,8 @@ func abs(a int) int {
 
 func stringsToInts(s []string) []int {
 	ints := []int{}
-	for i := 0; i < len(s); i++ {
-		mes, err := strconv.Atoi(s[i])
+	for _, str := range s {
+		mes, err := strconv.Atoi(str)
 		if err != nil {
 			log.Fatalln(err)
 		}
